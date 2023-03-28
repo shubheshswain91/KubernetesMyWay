@@ -1,2 +1,2 @@
 # KubernetesMyWay
-Repo for Kubernetes tasks.
+Repo for Kubernetes task.
