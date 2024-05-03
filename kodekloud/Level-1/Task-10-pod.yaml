@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: time-check
+  namespace: datacenter
+spec:
+  containers:
+    - name: time-check
+      image: busybox:latest
+      command:
+        - "/bin/sh"
+        - "-c"
+        - "while true; do date; sleep $TIME_FREQ; done >> /opt/security/time/time-check.log"
+      env:
+        - name: TIME_FREQ
+          valueFrom:
+            configMapKeyRef:
+              name: time-config
+              key: TIME_FREQ
+      volumeMounts:
+        - name: log-volume
+          mountPath: /opt/security/time
+  volumes:
+    - name: log-volume
+      emptyDir: {}
+
+# Verify that the ConfigMap and Pod have been created successfully:
+# kubectl get configmap time-config -n datacenter
+# kubectl get pods -n datacenter
+
+# Check the logs of the time-check pod to ensure the expected behavior:
+# kubectl logs time-check -n datacenter
+
+# Inspect the volume and its content within the time-check pod:
+# kubectl exec -it time-check -n datacenter -- ls /opt/security/time
+# kubectl exec -it time-check -n datacenter -- cat /opt/security/time/time-check.log
