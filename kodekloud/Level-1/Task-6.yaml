@@ -1,26 +1,24 @@
 # Rollback a Deployment in Kubernetes
 
-comment: >
-  This morning the Nautilus DevOps team rolled out a new release for one of the applications. 
-  Recently one of the customers logged a complaint which seems to be about a bug related to the recent release. 
-  Therefore, the team wants to rollback the recent release.
-  There is a deployment named nginx-deployment; roll it back to the previous revision.
+  # This morning the Nautilus DevOps team rolled out a new release for one of the applications. 
+  # Recently one of the customers logged a complaint which seems to be about a bug related to the recent release. 
+  # Therefore, the team wants to rollback the recent release.
+  # There is a deployment named nginx-deployment; roll it back to the previous revision.
 
-task: >
-  thor@jump_host ~$ kubectl rollout history deployment nginx-deployment
-  deployment.apps/nginx-deployment 
-  REVISION  CHANGE-CAUSE
-  1         <none>
-  2         kubectl set image deployment nginx-deployment nginx-container=nginx:alpine-perl --kubeconfig=/root/.kube/config --record=true
+  # thor@jump_host ~$ kubectl rollout history deployment nginx-deployment
+  # deployment.apps/nginx-deployment 
+  # REVISION  CHANGE-CAUSE
+  # 1         <none>
+  # 2         kubectl set image deployment nginx-deployment nginx-container=nginx:alpine-perl --kubeconfig=/root/.kube/config --record=true
 
-  thor@jump_host ~$ kubectl rollout undo deployment nginx-deployment --to-revision=N
-  error: invalid argument "N" for "--to-revision" flag: strconv.ParseInt: parsing "N": invalid syntax
-  See 'kubectl rollout undo --help' for usage.
-  thor@jump_host ~$ kubectl rollout undo deployment nginx-deployment --to-revision=1
-  deployment.apps/nginx-deployment rolled back
-  thor@jump_host ~$ kubectl get deployment nginx-deployment
-  NAME               READY   UP-TO-DATE   AVAILABLE   AGE
-  nginx-deployment   3/3     3            3           5m53s
-  thor@jump_host ~$ kubectl rollout status deployment nginx-deployment
-  deployment "nginx-deployment" successfully rolled out
+  # thor@jump_host ~$ kubectl rollout undo deployment nginx-deployment --to-revision=N
+  # error: invalid argument "N" for "--to-revision" flag: strconv.ParseInt: parsing "N": invalid syntax
+  # See 'kubectl rollout undo --help' for usage.
+  # thor@jump_host ~$ kubectl rollout undo deployment nginx-deployment --to-revision=1
+  # deployment.apps/nginx-deployment rolled back
+  # thor@jump_host ~$ kubectl get deployment nginx-deployment
+  # NAME               READY   UP-TO-DATE   AVAILABLE   AGE
+  # nginx-deployment   3/3     3            3           5m53s
+  # thor@jump_host ~$ kubectl rollout status deployment nginx-deployment
+  # deployment "nginx-deployment" successfully rolled out
  
