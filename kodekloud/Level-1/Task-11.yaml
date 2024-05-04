@@ -1,0 +1,96 @@
+# Troubleshoot Issue With Pods
+
+# One of the junior DevOps team members was working on to deploy a stack on Kubernetes cluster. 
+# Somehow the pod is not coming up and its failing with some errors. We need to fix this as soon as possible. Please look into it.
+
+
+# There is a pod named webserver and the container under it is named as httpd-container. It is using image httpd:latest
+
+# There is a sidecar container as well named sidecar-container which is using ubuntu:latest image.
+
+# Look into the issue and fix it, make sure pod is in running state and you are able to access the app.
+
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Pod","metadata":{"annotations":{},"labels":{"app":"web-app"},"name":"webserver","namespace":"default"},"spec":{"containers":[{"image":"httpd:latests","name":"httpd-container","volumeMounts":[{"mountPath":"/var/log/httpd","name":"shared-logs"}]},{"command":["sh","-c","while true; do cat /var/log/httpd/access.log /var/log/httpd/error.log; sleep 30; done"],"image":"ubuntu:latest","name":"sidecar-container","volumeMounts":[{"mountPath":"/var/log/httpd","name":"shared-logs"}]}],"volumes":[{"emptyDir":{},"name":"shared-logs"}]}}
+  creationTimestamp: "2024-05-03T16:29:25Z"
+  labels:
+    app: web-app
+  name: webserver
+  namespace: default
+  resourceVersion: "2431"
+  uid: e1dbf266-6082-4760-a85f-d3da37b6f23e
+spec:
+  containers:
+  - image: httpd:latest
+    imagePullPolicy: IfNotPresent
+    name: httpd-container
+    resources: {}
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/log/httpd
+      name: shared-logs
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-j9shr
+      readOnly: true
+    command:
+      - sh
+      - -c
+      - while true; do cat /var/log/httpd/access.log /var/log/httpd/error.log; sleep 30; done
+  - image: ubuntu:latest
+    imagePullPolicy: Always
+    name: sidecar-container
+    resources: {}
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/log/httpd
+      name: shared-logs
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-j9shr
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: kodekloud-control-plane
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - emptyDir: {}
+    name: shared-logs
+  - name: kube-api-access-j9shr
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
