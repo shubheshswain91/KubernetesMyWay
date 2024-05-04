@@ -63,7 +63,7 @@ spec:
     - mountPath: /etc/nginx/nginx.conf
       name: nginx-config-volume
       subPath: nginx.conf
-      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
       name: kube-api-access-lvtm2
       readOnly: true
   dnsPolicy: ClusterFirst
@@ -98,64 +98,16 @@ spec:
       defaultMode: 420
       sources:
       - serviceAccountToken:
-      expirationSeconds: 3607
-          path: token
+        expirationSeconds: 3607
+        path: token
       - configMap:
-          items:
-          - key: ca.crt
-            path: ca.crt
+        items:
+        - key: ca.crt
+          path: ca.crt
           name: kube-root-ca.crt
       - downwardAPI:
-          items:
+        items:
           - fieldRef:
               apiVersion: v1
               fieldPath: metadata.namespace
-            path: namespace
-status:
-  conditions:
-  - lastProbeTime: null
-    lastTransitionTime: "2024-05-04T08:05:03Z"
-    status: "True"
-    type: Initialized
-  - lastProbeTime: null
-    lastTransitionTime: "2024-05-04T08:05:23Z"
-    status: "True"
-    type: Ready
-  - lastProbeTime: null
-    lastTransitionTime: "2024-05-04T08:05:23Z"
-    status: "True"
-    type: ContainersReady
-  - lastProbeTime: null
-    lastTransitionTime: "2024-05-04T08:05:03Z"
-    status: "True"
-    type: PodScheduled
-  containerStatuses:
-  - containerID: containerd://2ee94d8d888a18b9434928f5366c30991f8be5d5ae7838e78bb8025fadc319be
-    image: docker.io/library/nginx:latest
-    imageID: docker.io/library/nginx@sha256:ed6d2c43c8fbcd3eaa44c9dab6d94cb346234476230dc1681227aa72d07181ee
-    lastState: {}
-    name: nginx-container
-    ready: true
-    restartCount: 0
-    started: true
-    state:
-      running:
-        startedAt: "2024-05-04T08:05:23Z"
-  - containerID: containerd://8d61d2293f3595a6c7242f59ebe6b60a197eb91273cefae1f006a841526e126f
-    image: docker.io/library/php:7.2-fpm-alpine
-    imageID: docker.io/library/php@sha256:2e2d92415f3fc552e9a62548d1235f852c864fcdc94bcf2905805d92baefc87f
-    lastState: {}
-    name: php-fpm-container
-    ready: true
-    restartCount: 0
-    started: true
-    state:
-      running:
-        startedAt: "2024-05-04T08:05:07Z"
-  hostIP: 172.17.0.2
-  phase: Running
-  podIP: 10.244.0.5
-  podIPs:
-  - ip: 10.244.0.5
-  qosClass: BestEffort
-  startTime: "2024-05-04T08:05:03Z"
+              path: namespace
