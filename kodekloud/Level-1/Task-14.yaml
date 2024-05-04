@@ -1,0 +1,161 @@
+# Fix Issue with Volume Mounts in Kubernetes
+
+# We deployed a Nginx and PHP-FPM based setup on Kubernetes cluster last week and it had been working fine so far. 
+# This morning one of the team members made a change somewhere which caused some issues, and it stopped working. Please look into the issue and fix it:
+
+# The pod name is nginx-phpfpm and configmap name is nginx-config. Figure out the issue and fix the same.
+
+# Once issue is fixed, copy /home/thor/index.php file from the jump host to the nginx-container under nginx document root 
+# and you should be able to access the website using Website button on top bar.
+
+# Answer
+# Copy the path which is et in the config map to the pod yaml file which is /var/www/html
+# run  k replace -f pod.yaml --force 
+#  kubectl cp  /home/thor/index.php  nginx-phpfpm:/var/www/html -c nginx-container
+# kubectl exec -it nginx-phpfpm -c nginx-container  -- curl -I  http://localhost:8099
+
+# thor@jump_host ~$  kubectl exec -it nginx-phpfpm -c nginx-container  -- curl -I  http://localhost:8099
+# HTTP/1.1 200 OK
+# Server: nginx/1.25.5
+# Date: Sat, 04 May 2024 08:41:48 GMT
+# Content-Type: text/html; charset=UTF-8
+# Connection: keep-alive
+# X-Powered-By: PHP/7.2.34
+
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |    # change in the below line  from /usr/share/nginx/html to /var/www/html
+      {"apiVersion":"v1","kind":"Pod","metadata":{"annotations":{},"labels":{"app":"php-app"},"name":"nginx-phpfpm","namespace":"default"},"spec":{"containers":[{"image":"php:7.2-fpm-alpine","name":"php-fpm-container","volumeMounts":[{"mountPath":"/var/www/html","name":"shared-files"}]},{"image":"nginx:latest","name":"nginx-container","volumeMounts":[{"mountPath":"/var/www/html","name":"shared-files"},{"mountPath":"/etc/nginx/nginx.conf","name":"nginx-config-volume","subPath":"nginx.conf"}]}],"volumes":[{"emptyDir":{},"name":"shared-files"},{"configMap":{"name":"nginx-config"},"name":"nginx-config-volume"}]}}
+  creationTimestamp: "2024-05-04T08:05:03Z"
+  labels:
+    app: php-app
+  name: nginx-phpfpm
+  namespace: default
+  resourceVersion: "5008"
+  uid: 3906ab92-98f9-4aa8-908b-4fe3b76ae168
+spec:
+  containers:
+  - image: php:7.2-fpm-alpine
+    imagePullPolicy: IfNotPresent
+    name: php-fpm-container
+    resources: {}
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/www/html  ## here too
+      name: shared-files
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-lvtm2
+      readOnly: true
+  - image: nginx:latest
+    imagePullPolicy: Always
+    name: nginx-container
+    resources: {}
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/www/html
+      name: shared-files
+    - mountPath: /etc/nginx/nginx.conf
+      name: nginx-config-volume
+      subPath: nginx.conf
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-lvtm2
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: kodekloud-control-plane
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - emptyDir: {}
+    name: shared-files
+  - configMap:
+      defaultMode: 420
+      name: nginx-config
+    name: nginx-config-volume
+  - name: kube-api-access-lvtm2
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+      expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2024-05-04T08:05:03Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2024-05-04T08:05:23Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2024-05-04T08:05:23Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2024-05-04T08:05:03Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://2ee94d8d888a18b9434928f5366c30991f8be5d5ae7838e78bb8025fadc319be
+    image: docker.io/library/nginx:latest
+    imageID: docker.io/library/nginx@sha256:ed6d2c43c8fbcd3eaa44c9dab6d94cb346234476230dc1681227aa72d07181ee
+    lastState: {}
+    name: nginx-container
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2024-05-04T08:05:23Z"
+  - containerID: containerd://8d61d2293f3595a6c7242f59ebe6b60a197eb91273cefae1f006a841526e126f
+    image: docker.io/library/php:7.2-fpm-alpine
+    imageID: docker.io/library/php@sha256:2e2d92415f3fc552e9a62548d1235f852c864fcdc94bcf2905805d92baefc87f
+    lastState: {}
+    name: php-fpm-container
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2024-05-04T08:05:07Z"
+  hostIP: 172.17.0.2
+  phase: Running
+  podIP: 10.244.0.5
+  podIPs:
+  - ip: 10.244.0.5
+  qosClass: BestEffort
+  startTime: "2024-05-04T08:05:03Z"
