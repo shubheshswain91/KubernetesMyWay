@@ -1,0 +1,29 @@
+# A new java-based application is ready to be deployed on a Kubernetes cluster. The development team had a meeting with the DevOps team to
+#  share the requirements and application scope. The team is ready to setup an application stack for it under their existing cluster. 
+#  Below you can find the details for this:
+
+
+# Create a namespace named tomcat-namespace-datacenter.
+
+# Create a deployment for tomcat app which should be named as tomcat-deployment-datacenter under the same namespace you created. 
+# Replica count should be 1, the container should be named as tomcat-container-datacenter, its image should be gcr.io/kodekloud/centos-ssh-enabled:tomcat and 
+# its container port should be 8080.
+
+# Create a service for tomcat app which should be named as tomcat-service-datacenter under the same namespace you created. Service type should be
+#  NodePort and nodePort should be 32227.
+
+# Create the namespace
+# kubectl create namespace tomcat-namespace-datacenter
+
+# Create the deployment
+# kubectl create deployment tomcat-deployment-datacenter --namespace=tomcat-namespace-datacenter --replicas=1 --image=gcr.io/kodekloud/centos-ssh-enabled:tomcat --port=8080
+
+# Expose the deployment as a service (NodePort)
+# kubectl expose deployment tomcat-deployment-datacenter --namespace=tomcat-namespace-datacenter --name=tomcat-service-datacenter --type=NodePort --port=8080 --target-port=8080
+
+
+
+# edit the service file: 
+# k edit svc -n tomcat-namespace-datacenter tomcat-service-datacenter 
+
+# and set the Nodeport value to 32227
