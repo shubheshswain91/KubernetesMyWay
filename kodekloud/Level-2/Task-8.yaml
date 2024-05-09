@@ -18,6 +18,35 @@
 # Create the deployment
 # kubectl create deployment tomcat-deployment-datacenter --namespace=tomcat-namespace-datacenter --replicas=1 --image=gcr.io/kodekloud/centos-ssh-enabled:tomcat --port=8080
 
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  #creationTimestamp: null
+  labels:
+    app: tomcat-deployment-datacenter
+  name: tomcat-deployment-datacenter
+  namespace: tomcat-namespace-datacenter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tomcat-deployment-datacenter
+  strategy: {}
+  template:
+    metadata:
+      #creationTimestamp: null
+      labels:
+        app: tomcat-deployment-datacenter
+    spec:
+      containers:
+      - image: gcr.io/kodekloud/centos-ssh-enabled:tomcat
+        name: tomcat-container-datacenter
+        ports:
+        - containerPort: 8080
+        # resources: {}
+status: {}
+
 # Expose the deployment as a service (NodePort)
 # kubectl expose deployment tomcat-deployment-datacenter --namespace=tomcat-namespace-datacenter --name=tomcat-service-datacenter --type=NodePort --port=8080 --target-port=8080
 
